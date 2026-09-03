@@ -1,158 +1,123 @@
-## Warranty & Liability
-This software is provided "as is", without warranty of any kind. See the LICENSE file for the full GPL-3.0 disclaimer of warranty and limitation of liability.
+ ForgeCMS
 
-I'm not responsible if this breaks your setup. Test it before using it in production.
+> Flask Blog & CMS mit MariaDB – Auth, Draft/Scheduled/Published Workflow, Markdown und Media Uploads. Gebaut weil ich schon immer bloggen wollte, aber nie Zeit und kein Impressum hatte.
 
-# ForgeCMS
+**Stack:** Python 3.8+, Flask, SQLAlchemy, MariaDB 10.5+, Bootstrap 5, Docker
 
-ForgeCMS is a Flask-based blogging and CMS application backed by MariaDB. It includes authentication, an admin workflow for draft/scheduled/published content, Markdown authoring, and media upload support.
+Ich wollte immer einen eigenen Blog statt WordPress – leicht, selbst gehostet, ohne Overhead. Am Ende ist es nie live gegangen, weil Zeit gefehlt hat und in Deutschland ohne Impressum direkt Abmahn-Risiko hast. Deshalb liegt es jetzt als Open-Source hier.
 
-## Overview
+### Was kann ForgeCMS?
+- User Registrierung & Login
+- Admin Content Verwaltung
+- Post Workflow: `draft`, `scheduled`, `published`, `archived`
+- Vorschau für unveröffentlichte Posts
+- SEO-freundliche Slugs, Bootstrap Responsive UI
+- Bild Uploads für Posts
 
-### What ForgeCMS provides
-- User registration and login
-- Admin content management experience
-- Post workflow states (`draft`, `scheduled`, `published`, `archived`)
-- Preview support for unpublished posts
-- SEO-friendly slugs and Bootstrap-based responsive UI
-- Image upload support for post media
+### Repo Aufbau
+- `app/` – Flask App (Blueprints, Models, App Factory)
+- `templates/` – Jinja2 Templates
+- `static/` – CSS & Uploads
+- `migrations/` – DB Migrationen inkl. `migrations/manual/` SQL
+- `wsgi.py` – WSGI Entrypoint
+- `Dockerfile` / `docker-compose.yml` – Single Server Deployment
+- `docker-compose.enterprise.yml` – Multi-Instance mit NGINX Loadbalancer
+- `docker/` – Container Helper & NGINX Config
 
-### Repository layout
-- `app/` – Flask application package (blueprints, models, app factory)
-- `templates/` – Jinja2 HTML templates
-- `static/` – CSS and uploaded/static assets
-- `migrations/` – Database migration artifacts (including `migrations/manual/` SQL files)
-- `wsgi.py` – WSGI entrypoint
-- `Dockerfile` – Production image definition
-- `docker-compose.yml` – Default single-server deployment
-- `docker-compose.enterprise.yml` – Enterprise multi-instance deployment
-- `docker/` – Container helper scripts and NGINX configuration
+## Schnellstart mit Docker (empfohlen)
 
-### Tech stack
-- Python 3.8+
-- Flask
-- SQLAlchemy + Flask-Migrate
-- MariaDB 10.5+
-- Bootstrap 5
-- Docker / Docker Compose
-
-## Quick start with Docker (recommended)
-
-### Prerequisites
+### Voraussetzungen
 - Docker Engine 24+
 - Docker Compose v2+
 
-### 1) Configure environment
+### 1) Environment
 ```bash
 cp .env.example .env
 ```
-
-Update at least:
+Mindestens setzen:
 - `SECRET_KEY`
 - `DB_PASSWORD`
 - `DB_ROOT_PASSWORD`
 
-### 2) Default mode: single Linux server
-Runs one ForgeCMS container plus one MariaDB container on one host.
+### 2) Default Mode – ein Linux Server
+Ein ForgeCMS Container + ein MariaDB Container.
 
 ```bash
 docker compose up -d --build
 ```
 
 - ForgeCMS: `http://localhost:8000`
-- Persistent data:
-  - `mariadb_data` volume for DB
-  - `uploads_data` volume for media uploads
+- Persistente Daten: `mariadb_data` und `uploads_data` Volumes
 
 Stop:
 ```bash
 docker compose down
 ```
 
-### 3) Enterprise mode: multi-instance application tier
-Runs two ForgeCMS app instances behind NGINX plus one MariaDB server.
+### 3) Enterprise Mode – Multi-Instance
+Zwei ForgeCMS Instanzen hinter NGINX + ein MariaDB.
 
 ```bash
 docker compose -f docker-compose.enterprise.yml up -d --build
 ```
 
-- Entry point: `http://localhost` (port 80)
-- Backend app containers: `forgecms-a`, `forgecms-b`
-- Shared uploads volume mounted by both app containers and NGINX
+- Einstieg: `http://localhost` (Port 80)
+- Backend: `forgecms-a`, `forgecms-b`
+- Shared Uploads Volume für beide Apps + NGINX
 
 Stop:
 ```bash
 docker compose -f docker-compose.enterprise.yml down
 ```
 
-## Docker behavior notes
-- Container startup waits for MariaDB before launching the app.
-- Database migrations run automatically at startup.
-  - In enterprise mode, only `forgecms-a` runs migrations.
-- `UPLOAD_FOLDER` defaults to `static/uploads` and is persisted in Docker volumes.
+### Docker Hinweise
+- Container warten auf MariaDB bevor die App startet
+- Migrationen laufen automatisch beim Start (im Enterprise Mode nur `forgecms-a`)
+- `UPLOAD_FOLDER` default `static/uploads`, liegt im Volume
 
-## Local non-Docker setup
+## Lokal ohne Docker
 
-### 1) Clone the repository
 ```bash
-git clone <repository-url>
+git clone <repo-url>
 cd forgecms
-```
-
-### 2) Create and activate a virtual environment
-```bash
 python -m venv venv
-# Linux/macOS
 source venv/bin/activate
-```
-
-### 3) Install dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### 4) Create MariaDB database and user
+### MariaDB anlegen
 ```sql
 CREATE DATABASE forgecms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'forgecms'@'localhost' IDENTIFIED BY 'your_password';
+CREATE USER 'forgecms'@'localhost' IDENTIFIED BY 'dein_passwort';
 GRANT ALL PRIVILEGES ON forgecms.* TO 'forgecms'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### 5) Configure environment variables
 ```bash
 cp .env.example .env
-```
-
-### 6) Apply database migrations
-```bash
 flask db upgrade
-```
-
-### 7) Run the development server
-```bash
 flask run
 ```
+Läuft auf `http://127.0.0.1:5000`.
 
-By default, Flask serves on `http://127.0.0.1:5000`.
-
-## Create an admin user (Flask shell)
+## Admin User anlegen
 ```bash
 flask shell
 ```
-
 ```python
 from app import db
 from app.models import User
 
 admin = User(username='admin', email='admin@example.com', is_admin=True)
-admin.set_password('your-secure-password')
+admin.set_password('sicheres-passwort')
 db.session.add(admin)
 db.session.commit()
 ```
 
-## Community and governance
+## Warum das Projekt noch relevant ist
+Für mich ist es die Basis für `d5niel.de` und den News-Bereich auf `shadowunity.de` – sobald Impressum geklärt ist. Kein WordPress, volle Kontrolle, MariaDB Erfahrung die ich eh täglich nutze. Und Docker-Ready für meinen "pure Docker statt Panel" Ansatz.
 
-- [Contributing guide](CONTRIBUTING.md)
+## Lizenz & Community
+- [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [License (GNU GPLv3)](LICENSE)
+- [GNU GPLv3](LICENSE)

@@ -120,4 +120,4 @@ Für mich ist es die Basis für `d5niel.de` und den News-Bereich auf `shadowunit
 ## Lizenz & Community
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [GNU GPLv3](LICENSE)
+- [MIT](LICENSE) — gilt für Releases ab 24.10.2026. Ältere Stände/Commits davor bleiben unter GNU GPLv3.
